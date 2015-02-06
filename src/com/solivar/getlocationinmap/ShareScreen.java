@@ -1,5 +1,10 @@
 package com.solivar.getlocationinmap;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 
 import android.app.Activity;
@@ -8,11 +13,16 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.telephony.SmsManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +34,7 @@ public class ShareScreen extends Activity {
 	String longitude;
 	TextView locationText;
 	ImageButton whatsapp,hike,gmail,message,googlePlus;
+	Button view,btn,addFav;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -37,6 +48,17 @@ public class ShareScreen extends Activity {
 		locationText.setText("Now you are at :\n"+fullAddress);
 		whatsapp = (ImageButton) findViewById(R.id.whatsapp);
 		
+		addFav = (Button) findViewById(R.id.add_fav);
+		addFav.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent i = new Intent(getApplicationContext(),AddFavourites.class);
+				startActivity(i);
+			}
+			
+		});
 		whatsapp.setOnClickListener(new OnClickListener(){
 
 			@Override
@@ -80,9 +102,61 @@ public class ShareScreen extends Activity {
 			}
 			
 		});
+		view = (Button) findViewById(R.id.view);
+		view.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				try{
+				BufferedReader inputReader = new BufferedReader(new InputStreamReader(
+			            openFileInput("find_me_1.txt")));
+			    String inputString;
+			    StringBuffer stringBuffer = new StringBuffer();                
+			    while ((inputString = inputReader.readLine()) != null) {
+			        stringBuffer.append(inputString);
+			    }	
+				   inputReader.close();
+				   
+				   sendToFavorites(stringBuffer.toString());
+				}
+				catch(FileNotFoundException fnfex){Toast.makeText(getApplicationContext(), "No Favourites Exist", Toast.LENGTH_SHORT).show();}
+				catch(IOException ioex){Toast.makeText(getApplicationContext(), ioex.toString(), Toast.LENGTH_SHORT).show();}
+				catch(Exception ex){Toast.makeText(getApplicationContext(), "No Favourites Exist", Toast.LENGTH_SHORT).show();}
+				
+			}
+		});
+		
 		
 	}
 	
+	public void sendToFavorites(String numbers)
+	{
+		//Toast.makeText(getApplicationContext(), numbers, Toast.LENGTH_SHORT).show();
+		String [] nums = numbers.split(";");
+		if(nums.length==0)
+		{
+			Toast.makeText(getApplicationContext(), "No Favourites Added", Toast.LENGTH_SHORT).show();
+		}else{
+		try {
+	         SmsManager smsManager = SmsManager.getDefault();
+	         for(int i=0;i<nums.length;i++)
+	         {
+	        	// Toast.makeText(getApplicationContext(), nums[i], Toast.LENGTH_SHORT).show();
+	     		
+	        	 smsManager.sendTextMessage(nums[i], null, "Help Me in trouble at "+ fullAddress 
+	        			 +"\nLocation : \n"+" http://maps.google.com/maps?q="+latitude+","+longitude , null, null);
+	        	 Toast.makeText(getApplicationContext(), "SMS sent.",
+	        	 Toast.LENGTH_LONG).show();
+	         }
+	      } catch (Exception e) {
+	         Toast.makeText(getApplicationContext(),
+	         "SMS failed, please try again.",
+	         Toast.LENGTH_LONG).show();
+	         e.printStackTrace();
+	      }
+		}
+	}
 	public void onClickSend(View view,String packageName) {
 
 	    PackageManager pm=getPackageManager();

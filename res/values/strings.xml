@@ -12,4 +12,12 @@
     <string name="share_facebook">Share fb</string>
     <string name="share_sms">Share sms</string>
     <string name="share_email_gmail">Share email gmail</string>
+    <string name="title_activity_registration">Find Me</string>
+    <string name="title_activity_enter_code_screen">Find Me</string>
+    <string name="title_activity_add_numbers">Add Favourites</string>
+    <string name="title_activity_find_friend_location">Enter Friend\'s Country Code</string>
+    <string name="title_activity_friends_map">Find Friend</string>
+    <string name="title_activity_add_favourites">AddFavourites</string>
+    <string name="title_activity_example">Example</string>
+
 </resources>

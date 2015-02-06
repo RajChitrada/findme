@@ -1,0 +1,77 @@
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="fill_parent"
+          android:layout_height="70dp"
+          android:background="@drawable/list_row_selector"
+           android:paddingTop="0dip" android:layout_gravity="top"
+         >
+        <TableRow 
+            android:background="#ffffff"
+            android:layout_height="match_parent">
+            <LinearLayout
+                  android:layout_width="65dp"
+                  android:layout_height="65dp"
+                  android:paddingLeft="10dp"
+                  android:paddingTop="5dp"
+                  android:background="#ffffff"
+                  android:paddingBottom="5dp"
+                  >
+              <ImageView
+                  android:background="#ffffff"
+                  android:layout_height="55dp"
+                  android:layout_width="55dp"
+                  android:layout_gravity="left|top" 
+                  android:scaleType="centerCrop"
+                  android:id="@+id/image1"
+                  android:contentDescription="Contact Image"
+                  android:src="@drawable/img_contact"/>
+              </LinearLayout>
+  <TableLayout
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:background="#ffffff"
+          android:paddingTop="5dip" 
+          android:layout_gravity="top"
+          
+            >
+            <TableRow android:layout_height="65dp"
+                android:background="#ffffff"
+                >       
+               <TextView
+                    android:id="@+id/textfav"
+                    android:layout_height="fill_parent"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1" 
+                    android:layout_gravity="left|center_vertical"
+                    android:textSize="20sp"
+                    android:background="#ffffff"
+                   
+                    android:layout_marginLeft="10dip"
+                    android:layout_marginTop="2dip"
+                    android:layout_marginBottom="4dip"
+                    android:textColor="#12a5f4"
+                    
+                    />
+               
+              </TableRow>
+
+               <TableRow android:background="#ffffff">
+          
+                 <TextView
+                    android:text=""
+                    android:id="@+id/textfav1"
+                    android:layout_height="wrap_content"
+                    android:layout_width="fill_parent"
+                    android:layout_weight="1"
+                    android:layout_gravity="left|center_vertical"
+                    android:textSize="16sp"
+                    android:background="#ffffff"
+                    android:textColor="#12a5f4"
+                    android:layout_marginLeft="10dip"
+                    android:layout_marginTop="2dip"
+                    android:gravity="left"/>
+              </TableRow>   
+            </TableLayout>
+               
+               
+       </TableRow>
+</TableLayout>

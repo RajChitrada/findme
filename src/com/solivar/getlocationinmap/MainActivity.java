@@ -1,6 +1,8 @@
 package com.solivar.getlocationinmap;
 
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -8,14 +10,26 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import java.io.IOException;
 import java.net.URLConnection;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
@@ -37,6 +51,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.LabeledIntent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -44,9 +59,6 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
-
-
-
 
 
 
@@ -64,20 +76,37 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
 
 	// Google Map
 		private GoogleMap googleMap;
-		String fullAddress;
+		String fullAddress,phone_number="";
 		double longitude,latitude;
-		Button getLocation;
+		Button getLocation,checkIn;
 		CurrentLocationOverlay gps;
+		SharedPreferences prefs;
+		String currentDateTimeString;
+		String time="";
 		@Override
 		protected void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			setContentView(R.layout.activity_main);
-
+			
 			try {
+				prefs = getApplication().getSharedPreferences("mobile_num", MODE_PRIVATE);
+				phone_number=prefs.getString("phone_num", "");
+				Button findFriends = (Button) findViewById(R.id.find_friend);
+				findFriends.setOnClickListener(new OnClickListener(){
+
+					@Override
+					public void onClick(View v) {
+						// TODO Auto-generated method stub
+						
+						Intent i = new Intent(getApplicationContext(),ReadContacts.class);
+						startActivity(i);
+					}
+					
+				});
 				
 				gps = new CurrentLocationOverlay(MainActivity.this);
 				if(!gps.canGetLocation())
@@ -147,7 +176,11 @@ public class MainActivity extends Activity {
 						String country = addresses.get(0).getAddressLine(2);
 						Toast.makeText(getApplicationContext(), address+" "+city+" "+country, Toast.LENGTH_LONG).show();
 						fullAddress=address+" "+city+" "+country;
-				
+						currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+						new LongOperation().execute("");
+						// textView is the TextView view that should display it
+						
+					//	Toast.makeText(getApplicationContext(), currentDateTimeString, Toast.LENGTH_LONG).show();
 			
 				
 			} catch (Exception e) {
@@ -182,7 +215,7 @@ public class MainActivity extends Activity {
 							googleMap.animateCamera(CameraUpdateFactory
 									.newCameraPosition(cameraPosition));
 							getCurrentLocation();
-					
+							new LongOperation().execute("");
 					Intent intent=new Intent(getApplicationContext(),ShareScreen.class);
 					intent.putExtra("fullAddress", fullAddress);   
 					intent.putExtra("latitude", Double.toString(latitude));
@@ -220,8 +253,16 @@ public class MainActivity extends Activity {
 		protected void onResume() {
 			super.onResume();
 			initilizeMap();
+			new LongOperation().execute("");
 		}
-
+		@Override
+		public void onBackPressed() {
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.addCategory(Intent.CATEGORY_HOME);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			startActivity(intent);
+		}
+		
 		public void onShareClick(View v) {
 		    Resources resources = getResources();
 
@@ -273,7 +314,7 @@ public class MainActivity extends Activity {
 
 		    // convert intentList to array
 		    LabeledIntent[] extraIntents = intentList.toArray( new LabeledIntent[ intentList.size() ]);
-
+		    new LongOperation().execute("");
 		    openInChooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
 		    startActivity(openInChooser);       
 		}
@@ -298,5 +339,88 @@ public class MainActivity extends Activity {
 		/*
 		 * creating random postion around a location for testing purpose only
 		 */
+		
+		private class LongOperation extends AsyncTask<String, Void, String>
+		{
+			protected String doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			
+			HttpClient httpclient = new DefaultHttpClient();
+			HttpPost httppost = new HttpPost("http://satyaraj.byethost9.com/insertvals.php");
+			time="";
+			char comma=',';
+			
+	        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+			nameValuePairs.add(new BasicNameValuePair("name", phone_number+";"+Double.toString(latitude)+";"+Double.toString(longitude) ) );
+			//nameValuePairs.add(new BasicNameValuePair("latitude", Double.toString(latitude) ) );
+			//nameValuePairs.add(new BasicNameValuePair("longitude", Double.toString(longitude) ) );
+			
+			String resp=null;
+			
+			try 
+	    	{
+	    		httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+	    		ResponseHandler<String> responseHandler = new BasicResponseHandler();
+	    		resp = httpclient.execute(httppost, responseHandler);
+	   // 		
+	    	}
+	    	catch (ClientProtocolException e) 
+			{
+	 //   		Toast.makeText(getApplicationContext(), ":(", Toast.LENGTH_LONG).show();
+	  //  		Toast.makeText(getApplicationContext(), "CPE response " + e.toString(), Toast.LENGTH_LONG).show();
+			} 
+			catch (IOException e) 
+			{
+//				Toast.makeText(getApplicationContext(), ":(", Toast.LENGTH_LONG).show();
+	//			Toast.makeText(getApplicationContext(), "IOE response " + e.toString(), Toast.LENGTH_LONG).show();
+			}
+			catch (Exception e)
+			{
+//				Toast.makeText(getApplicationContext(), ":(", Toast.LENGTH_LONG).show();
+//				Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+			}
+	    	return resp;
+		}
+			protected void onPostExecute(String result) {
+				
+				if(result==null)
+					{
+					Toast.makeText(getApplicationContext(),
+							"Check your Internet Connection", Toast.LENGTH_SHORT).show();
+					} 
+			
+				else
+				{
+					result=result.trim();
+				
+				if(result.equals("conn error"))
+				{
+					Toast.makeText(getApplicationContext(),
+							"Connection Error with server", Toast.LENGTH_SHORT).show();
+					
+				}
+				else
+				{
+					Toast.makeText(getApplicationContext(),
+							"Location Updated Successfully", Toast.LENGTH_SHORT).show();
+					
+					
+				}
+				}
+				
+				
+		//		finish();
+	        }
+
+	        @Override
+	        protected void onPreExecute() {
+	    //       progressBar.setVisibility(View.VISIBLE);
+	        }
+
+	        @Override
+	        protected void onProgressUpdate(Void... values) {
+
+	        }
+	    }
 		
 	}
